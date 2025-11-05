@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Math-Preserving Translator — Song ngữ & Export</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap">
+<style>
+  :root{
+    --bg:#071428; --card:#071427; --accent:#06b6d4; --muted:#94a3b8; --surface:#0b1220;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#071428 0%,#041223 100%);color:#e6eef6}
+  .wrap{max-width:1200px;margin:20px auto;padding:18px}
+  header{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+  .logo{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0ea5b7,#0284c7);box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+  .logo svg{width:28px;height:28px}
+  h1{margin:0;font-size:18px}
+  .subtitle{color:var(--muted);font-size:13px;margin-top:4px}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+  .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  select,button,input[type=checkbox]{padding:10px 12px;border-radius:9px;border:none;font-weight:600;cursor:pointer}
+  select{background:var(--surface);color:inherit;border:1px solid rgba(255,255,255,0.04)}
+  button.primary{background:var(--accent);color:#022}
+  button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--muted)}
+  .cols{display:flex;gap:12px;margin-top:12px}
+  .col{flex:1;display:flex;flex-direction:column;min-width:0}
+  label{font-size:13px;color:var(--muted);margin-bottom:6px}
+  textarea{width:100%;min-height:360px;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;resize:vertical;font-family:inherit}
+  .output{white-space:pre-wrap;margin-top:6px;padding:12px;border-radius:8px;border:1px dashed rgba(255,255,255,0.04);min-height:360px;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);overflow:auto}
+  .small{font-size:13px;color:var(--muted)}
+  .top-actions{display:flex;gap:8px;align-items:center}
+  .export-wrap{position:relative}
+  .export-menu{position:absolute;right:0;top:46px;background:var(--card);border:1px solid rgba(255,255,255,0.04);padding:6px;border-radius:8px;display:none;min-width:160px;box-shadow:0 8px 32px rgba(2,6,23,0.6);z-index:50}
+  .export-menu button{display:block;width:100%;margin:6px 0;padding:8px;border-radius:6px;background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.03);text-align:left}
+  .export-menu button:hover{background:rgba(255,255,255,0.02);color:#e6eef6}
+  footer{margin-top:14px;color:var(--muted);font-size:13px;text-align:center}
+  @media (max-width:900px){ .cols{flex-direction:column} textarea, .output{min-height:220px} }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo" title="Logo">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 6c0-1.1.9-2 2-2h12v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6z" fill="#fff" fill-opacity="0.95"/>
+          <path d="M6 6h12" stroke="#0284c7" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Math-Preserving Translator — Song ngữ & Export</h1>
+        <div class="subtitle">Dịch văn bản (Giữ nguyên kí hiệu toán học). Export file song ngữ (.docx / .pdf)</div>
+      </div>
+      <div style="margin-left:auto;color:var(--muted);font-size:13px">Default filename: <strong>translated_result</strong></div>
+    </header>
+
+    <div class="card">
+      <div class="controls top-actions" style="justify-content:space-between;align-items:center">
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="direction" title="Chọn chiều dịch">
+            <option value="vi-en">Vietnamese → English (VN → EN)</option>
+            <option value="en-vi">English → Vietnamese (EN → VN)</option>
+          </select>
+          <button id="translateBtn" class="primary">Translate / Dịch</button>
+          <button id="clearBtn" class="ghost">Clear / Xóa</button>
+
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-left:10px">
+            <input id="manualMode" type="checkbox"/> Manual mode (offline)
+          </label>
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="export-wrap">
+            <button id="exportBtn" class="primary">Export ⬇️</button>
+            <div id="exportMenu" class="export-menu" role="menu" aria-hidden="true">
+              <button id="exportDocxBtn">Export as DOCX (.docx)</button>
+              <button id="exportPdfBtn">Export as PDF (.pdf)</button>
+            </div>
+          </div>
+          <button id="copyBtn" class="ghost">Copy translation</button>
+        </div>
+      </div>
+
+      <div class="cols" style="margin-top:12px">
+        <div class="col">
+          <label>Input (Original) / Văn bản gốc</label>
+          <textarea id="inputText" placeholder="Nhập bài toán / văn bản gốc ở đây. Ví dụ: Tìm x ∈ Z sao cho $x^2 - 5x + 6 = 0$."></textarea>
+          <div class="small" style="margin-top:6px">Ghi chú: Để bảo đảm chính xác, bạn có thể bọc công thức LaTeX bằng $...$ hoặc dùng `backticks`.</div>
+        </div>
+
+        <div class="col">
+          <label>Translation (Auto / Manual) / Bản dịch (Tự động hoặc thủ công)</label>
+          <!-- user can edit translation in manual mode -->
+          <div id="output" class="output" contenteditable="true" aria-label="Translation output"></div>
+          <div class="small" style="margin-top:6px">Nếu bật <strong>Manual mode</strong>, dán hoặc chỉnh sửa bản dịch trực tiếp ở đây (hoàn toàn offline).</div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px" class="small">Lưu ý: Mã dùng public Google Translate endpoint cho dịch tự động (không yêu cầu key). Nếu muốn hoàn toàn offline, bật Manual mode và nhập bản dịch thủ công.</div>
+    </div>
+
+    <footer>Designed for bilingual math translation • Xuất file song ngữ • Bản quyền</footer>
+  </div>
+
+<!-- html2pdf bundle for PDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+
+<script>
+/* ===========================
+   Math-preserving helpers
+   =========================== */
+
+/**
+ * extractSegments(text)
+ * - masks LaTeX-like, backticks, and math-like groups into placeholders [[MATH_n]]
+ * - returns { masked, segments }
+ * Heuristics aim to preserve formulas while leaving normal words intact.
+ */
+function extractSegments(text){
+  const segments = [];
+  let t = text;
+
+  // 1) Mask multiline $$...$$ first
+  t = t.replace(/\$\$[\s\S]*?\$\$/g, m => {
+    const token = `[[MATH_${segments.length}]]`; segments.push(m); return token;
+  });
+
+  // 2) Mask \[...\] and \(...\)
+  t = t.replace(/\\\[[\s\S]*?\\\]/g, m => { const token = `[[MATH_${segments.length}]]`; segments.push(m); return token; });
+  t = t.replace(/\\\([\s\S]*?\\\)/g, m => { const token = `[[MATH_${segments.length}]]`; segments.push(m); return token; });
+
+  // 3) Mask inline $...$
+  t = t.replace(/\$[^$\n][^$]*?\$/g, m => { const token = `[[MATH_${segments.length}]]`; segments.push(m); return token; });
+
+  // 4) Mask backticks `...`
+  t = t.replace(/`[^`]*`/g, m => { const token = `[[MATH_${segments.length}]]`; segments.push(m); return token; });
+
+  // 5) Mask math-like tokens/groups (numbers, variables with subscripts/superscripts, operators, greek letters, functions)
+  // We mask sequences that are likely formulas of length>=2 to avoid masking normal single words.
+  t = t.replace(/([A-Za-z0-9_{}^_\\-]+(?:[_\^][A-Za-z0-9{}]+)+|[0-9]+(?:\.[0-9]+)?|→|⇒|≤|≥|π|∑|∫|√|∞|\b(?:sin|cos|tan|log|ln|exp|sqrt)\b|\S*[0-9]+\S*)/g, m => {
+    // avoid masking plain short words (like 'in', 'on') — require either digit or operator or sub/super
+    if(m.length <= 1) return m;
+    if(!(/[0-9=+\-*/^_{}<>%→⇒≤≥π∑∫√∞]|[_\^]/.test(m))) {
+      // if it doesn't contain digit/operator or sub/sup char, probably a word — don't mask
+      return m;
+    }
+    const token = `[[MATH_${segments.length}]]`; segments.push(m); return token;
+  });
+
+  return { masked: t, segments: segments };
+}
+
+/**
+ * restoreSegments(text, segments)
+ * - replace [[MATH_n]] with original segments
+ */
+function restoreSegments(text, segments){
+  let out = text;
+  segments.forEach((s, i) => {
+    out = out.split(`[[MATH_${i}]]`).join(s);
+  });
+  return out;
+}
+
+/* ===========================
+   Google Translate helper
+   =========================== */
+
+/**
+ * googleTranslate(text, from, to)
+ * Uses public Google Translate endpoint (client=gtx).
+ * NOTE: This endpoint is free but not officially supported and may be rate-limited or blocked.
+ */
+async function googleTranslate(text, from, to){
+  // limit size to avoid extremely long requests - chunk if needed
+  const maxChunk = 2000; // characters per request - conservative
+  if(text.length <= maxChunk) {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${to}&dt=t&q=${encodeURIComponent(text)}`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('Translate endpoint failed: ' + res.status);
+    const data = await res.json();
+    return data[0].map(item => item[0]).join('');
+  } else {
+    // split by sentences reasonably
+    const parts = splitTextChunks(text, maxChunk);
+    let out = '';
+    for(const p of parts){
+      // small delay to be gentle on the endpoint (avoid bursts)
+      out += await googleTranslate(p, from, to);
+      await sleep(150);
+    }
+    return out;
+  }
+}
+
+function splitTextChunks(text, maxLen){
+  // naive split: by double newlines or sentences
+  const paragraphs = text.split(/\n{2,}/g);
+  const parts = [];
+  let cur = '';
+  for(const para of paragraphs){
+    if((cur + '\n\n' + para).length <= maxLen){
+      cur = cur ? (cur + '\n\n' + para) : para;
+    } else {
+      if(cur) parts.push(cur);
+      if(para.length <= maxLen) cur = para;
+      else {
+        // further split long paragraph by sentences
+        const sents = para.match(/[^\.!\?]+[\.!\?]*/g) || [para];
+        let cur2 = '';
+        for(const s of sents){
+          if((cur2 + s).length <= maxLen) cur2 += s;
+          else { if(cur2) parts.push(cur2); cur2 = s; }
+        }
+        if(cur2) parts.push(cur2);
+        cur = '';
+      }
+    }
+  }
+  if(cur) parts.push(cur);
+  return parts;
+}
+
+function sleep(ms){ return new Promise(res => setTimeout(res, ms)); }
+
+/* ===========================
+   UI bindings
+   =========================== */
+const inputEl = document.getElementById('inputText');
+const outputEl = document.getElementById('output');
+const translateBtn = document.getElementById('translateBtn');
+const clearBtn = document.getElementById('clearBtn');
+const manualModeCheckbox = document.getElementById('manualMode');
+const directionSel = document.getElementById('direction');
+const copyBtn = document.getElementById('copyBtn');
+
+translateBtn.addEventListener('click', async () => {
+  const inputText = inputEl.value || '';
+  if(!inputText.trim()){ outputEl.innerText = 'Please enter text / Vui lòng nhập văn bản.'; return; }
+
+  if(manualModeCheckbox.checked){
+    // Manual mode: user will edit translation in the right pane
+    // We prefill by copying left side as placeholder (so offline user can edit)
+    outputEl.innerText = inputText;
+    return;
+  }
+
+  outputEl.innerText = 'Translating... / Đang dịch...';
+  try {
+    // 1) mask
+    const { masked, segments } = extractSegments(inputText);
+    const [from, to] = directionSel.value.split('-');
+
+    // 2) translate masked text
+    const translatedMasked = await googleTranslate(masked, from, to);
+
+    // 3) restore segments
+    const restored = restoreSegments(translatedMasked, segments);
+
+    // 4) display bilingual (song ngữ) — but per user: export should be song ngữ
+    // Here we show translated text in right pane (user can edit)
+    outputEl.innerText = restored;
+
+  } catch(err){
+    outputEl.innerText = 'Translation error: ' + (err.message || err);
+  }
+});
+
+clearBtn.addEventListener('click', () => { inputEl.value = ''; outputEl.innerText = ''; });
+
+copyBtn.addEventListener('click', () => {
+  const txt = outputEl.innerText || '';
+  if(!txt) return alert('No translation to copy.');
+  navigator.clipboard.writeText(txt).then(()=> alert('Copied to clipboard'), ()=> alert('Copy failed'));
+});
+
+/* ===========================
+   Export (DOCX / PDF) logic
+   =========================== */
+
+const exportBtn = document.getElementById('exportBtn');
+const exportMenu = document.getElementById('exportMenu');
+const exportDocxBtn = document.getElementById('exportDocxBtn');
+const exportPdfBtn = document.getElementById('exportPdfBtn');
+
+exportBtn.addEventListener('click', (e)=> {
+  exportMenu.style.display = exportMenu.style.display === 'block' ? 'none' : 'block';
+  exportMenu.setAttribute('aria-hidden', exportMenu.style.display === 'none');
+  // close when click outside
+  const handler = (ev) => {
+    if(!exportMenu.contains(ev.target) && ev.target !== exportBtn){
+      exportMenu.style.display = 'none';
+      document.removeEventListener('click', handler);
+    }
+  };
+  document.addEventListener('click', handler);
+});
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
+}
+
+/* Build bilingual HTML for export:
+   - include original (left) and translated (right) with simple styling
+   - keep math tokens unchanged
+*/
+function buildBilingualHTML(originalText, translatedText){
+  const html = `
+  <!doctype html>
+  <html>
+  <head><meta charset="utf-8"><title>translated_result</title>
+    <style>
+      body{font-family:Arial, Helvetica, sans-serif;color:#000;margin:24px}
+      .wrap{display:flex;gap:20px}
+      .col{flex:1}
+      h2{font-size:16px;margin:0 0 8px 0}
+      pre{white-space:pre-wrap;font-size:14px;line-height:1.45}
+      .label{font-size:12px;color:#555;margin-bottom:6px}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="col">
+        <div class="label">Original / Văn bản gốc</div>
+        <pre>${escapeHtml(originalText)}</pre>
+      </div>
+      <div class="col">
+        <div class="label">Translation / Bản dịch</div>
+        <pre>${escapeHtml(translatedText)}</pre>
+      </div>
+    </div>
+  </body>
+  </html>`;
+  return html;
+}
+
+/* DOCX export: simple approach — create HTML and save with .docx mime-type.
+   This works well for Word and many editors (Word will import the HTML).
+*/
+exportDocxBtn.addEventListener('click', () => {
+  const original = inputEl.value || '';
+  const translated = outputEl.innerText || '';
+  if(!translated.trim()){ alert('No translated result to export / Không có kết quả để xuất.'); return; }
+
+  const html = buildBilingualHTML(original, translated);
+  // Word/Office will import HTML content inside a .docx blob if labeled correctly.
+  // Use application/vnd.openxmlformats-officedocument.wordprocessingml.document as blob type for convenience.
+  const blob = new Blob([html], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8' });
+  triggerDownload(blob, 'translated_result.docx');
+  exportMenu.style.display = 'none';
+});
+
+/* PDF export: use html2pdf to render the bilingual HTML to PDF */
+exportPdfBtn.addEventListener('click', () => {
+  const original = inputEl.value || '';
+  const translated = outputEl.innerText || '';
+  if(!translated.trim()){ alert('No translated result to export / Không có kết quả để xuất.'); return; }
+
+  const html = buildBilingualHTML(original, translated);
+  // create temp container
+  const temp = document.createElement('div');
+  temp.style.position = 'fixed';
+  temp.style.left = '-10000px';
+  temp.innerHTML = html;
+  document.body.appendChild(temp);
+
+  const opt = {
+    margin:       12,
+    filename:     'translated_result.pdf',
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+  };
+
+  html2pdf().set(opt).from(temp).save().then(() => {
+    document.body.removeChild(temp);
+    exportMenu.style.display = 'none';
+  }).catch(err => {
+    document.body.removeChild(temp);
+    alert('PDF export failed: ' + err);
+  });
+});
+
+/* Helpers for downloading blob */
+function triggerDownload(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 2000);
+}
+
+</script>
+</body>
+</html>
