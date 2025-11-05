@@ -53,3 +53,4 @@ fileInput.addEventListener('change', async (e) => {
     inputEl.value = 'Error reading file: ' + err.message;
   }
 });
+inputEl.scrollIntoView({ behavior: 'smooth' });
