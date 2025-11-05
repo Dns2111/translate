@@ -49,7 +49,7 @@
         </svg>
       </div>
       <div>
-        <h1>Math-Preserving Translator — Song ngữ & Export</h1>
+        <h1>Math-Preserving Translator — DNS </h1>
         <div class="subtitle">Dịch văn bản (Giữ nguyên kí hiệu toán học). Export file song ngữ (.docx / .pdf)</div>
       </div>
       <div style="margin-left:auto;color:var(--muted);font-size:13px">Default filename: <strong>translated_result</strong></div>
@@ -65,6 +65,9 @@
           <button id="translateBtn" class="primary">Translate / Dịch</button>
           <button id="clearBtn" class="ghost">Clear / Xóa</button>
 
+          <button id="uploadBtn" class="ghost">Upload file 📄</button>
+
+          <input type="file" id="fileInput" accept=".txt,.md,.docx,.pdf" style="display:none" />
           <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-left:10px">
             <input id="manualMode" type="checkbox"/> Manual mode (offline)
           </label>
@@ -100,7 +103,7 @@
       <div style="margin-top:12px" class="small">Lưu ý: Mã dùng public Google Translate endpoint cho dịch tự động (không yêu cầu key). Nếu muốn hoàn toàn offline, bật Manual mode và nhập bản dịch thủ công.</div>
     </div>
 
-    <footer>Designed for bilingual math translation • Xuất file song ngữ • Bản quyền</footer>
+    <footer>Designed for bilingual math translation • DNS </footer>
   </div>
 
 <!-- html2pdf bundle for PDF export -->
