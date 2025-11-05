@@ -54,3 +54,4 @@ fileInput.addEventListener('change', async (e) => {
   }
 });
 inputEl.scrollIntoView({ behavior: 'smooth' });
+translateBtn.click();
