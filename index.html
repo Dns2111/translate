@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Dịch thuật Khoa học (Bảo toàn Công thức) - DNS</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="wrap">
+        <header>
+            <h1>🌐 Scientific Translator</h1>
+            <div class="subtitle">Dịch tiếng Việt ↔ Tiếng Anh (Bảo toàn ký hiệu toán học)</div>
+        </header>
+
+        <div class="card">
+            <div class="controls top-actions">
+                <select id="direction" title="Chọn chiều dịch">
+                    <option value="vi-en">Vietnamese → English (VN → EN)</option>
+                    <option value="en-vi">English → Vietnamese (EN → VN)</option>
+                </select>
+                <button id="translateBtn" class="primary">Dịch (Translate)</button>
+                <button id="clearBtn" class="ghost">Xóa (Clear)</button>
+                <button id="uploadBtn" class="ghost">Upload File 📄</button>
+                <input type="file" id="fileInput" accept=".txt,.md,.docx,.pdf" style="display:none" />
+                <button id="exportBtn" class="primary" style="margin-left:auto;">Export Song ngữ ⬇️</button>
+            </div>
+
+            <div class="cols">
+                <div class="col">
+                    <label>Văn bản gốc (Input)</label>
+                    <textarea id="inputText"
+                        placeholder="Nhập văn bản. Ví dụ: Xét hàm số $f(x) = x^2 - 5x + 6$ với $x \in \mathbb{R}$."></textarea>
+                    <div class="small">Lưu ý: Bọc công thức LaTeX bằng $...$ hoặc dùng \`backticks\`.</div>
+                </div>
+                <div class="col">
+                    <label>Bản dịch (Translation)</label>
+                    <div id="output" class="output" contenteditable="true" aria-label="Translation output"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/dist/mammoth.browser.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
